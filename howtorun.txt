@@ -1,0 +1,13 @@
+## First time only
+python -m venv venv
+
+
+## Every time
+mac: source /venv/bin/activate
+windows: /venv/bin/activate.bat
+
+## Install dependencies
+pip install requirements.txt
+
+## Run server
+uvicorn main:app --reload
