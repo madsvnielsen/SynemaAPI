@@ -1,5 +1,9 @@
 ## First time only
 python -m venv venv
+Edit /venv/bin/activate (.bat if windows)
+to export TWO environemnt variables
+APIURL
+APIKEY
 
 
 ## Every time
@@ -10,4 +14,4 @@ windows: /venv/bin/activate.bat
 pip install requirements.txt
 
 ## Run server
-uvicorn main:app --reload
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
