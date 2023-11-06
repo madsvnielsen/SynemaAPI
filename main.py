@@ -31,10 +31,11 @@ def read_root():
 
 
 @app.get("/movies/discover")
-def discover_movies():
-    params = "?include_adult=true"
+def discover_movies(genres : str = ""):
+    params = "?with_genres="+genres if genres != "" else ""
     route = "discover/movie"
     url = API_URL + route + params
+    print(url)
     response = requests.get(url, headers=headers).json()
 
     simpleResult = [{
@@ -60,3 +61,14 @@ def user_login():
             "email": "api@net.dk"
         }
     }
+
+
+
+@app.get("/genres")
+def read_root():
+    params = ""
+    route = "genre/movie/list"
+    url = API_URL + route + params
+    response = requests.get(url, headers=headers)
+
+    return response.json()
