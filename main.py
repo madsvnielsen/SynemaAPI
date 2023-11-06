@@ -9,6 +9,7 @@ app = FastAPI()
 
 
 API_URL = os.environ["APIURL"]
+MEDIA_URL = "https://www.themoviedb.org/t/p/w300_and_h450_bestv2"
 
 headers = {
     "Authorization": os.environ["APIKEY"],
@@ -19,14 +20,34 @@ headers = {
 
 @app.get("/")
 def read_root():
-    url = API_URL + "find/tt0816692?external_source=imdb_id"
+    params = "?external_source=imdb_id"
+    route = "find/tt3113782"
+    url = API_URL + route + params
     response = requests.get(url, headers=headers)
+    imageurl =  MEDIA_URL +  response.json()["movie_results"][0]["poster_path"]
+
     return response.json()
 
 
-@app.get("/test")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"test": "noob", "q": q}
+@app.get("/movies/discover")
+def discover_movies():
+    params = "?include_adult=true"
+    route = "discover/movie"
+    url = API_URL + route + params
+    response = requests.get(url, headers=headers).json()
+
+    simpleResult = [{
+        "id" : res["id"],
+        "poster_url" : MEDIA_URL + res["poster_path"],
+        "title": res["title"],
+        "description" : res["overview"],
+        "rating" : res["vote_average"],
+        "release_date" : res["release_date"]
+    } for res in response["results"]
+
+    ]
+
+    return simpleResult
 
 @app.post("/user/login")
 def user_login():
