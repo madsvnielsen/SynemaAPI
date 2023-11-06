@@ -72,3 +72,25 @@ def read_root():
     response = requests.get(url, headers=headers)
 
     return response.json()
+
+
+
+@app.get("/movies/{id}")
+def get_movie(id : str = ""):
+    params = ""
+    route = "movie/"+id
+    url = API_URL + route + params
+    print(url)
+    res = requests.get(url, headers=headers).json()
+
+    simpleResult = {
+        "id" : res["id"],
+        "poster_url" : MEDIA_URL + res["poster_path"],
+        "title": res["title"],
+        "description" : res["overview"],
+        "rating" : res["vote_average"],
+        "release_date" : res["release_date"]
+    }
+
+
+    return simpleResult
