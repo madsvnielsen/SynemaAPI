@@ -7,6 +7,7 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
+print(os.environ)
 
 API_URL = os.environ["APIURL"]
 MEDIA_URL = "https://www.themoviedb.org/t/p/w300_and_h450_bestv2"
