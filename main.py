@@ -11,6 +11,7 @@ print(os.environ)
 
 API_URL = os.environ["APIURL"]
 MEDIA_URL = "https://www.themoviedb.org/t/p/w300_and_h450_bestv2"
+BACKDROP_URL ="https://image.tmdb.org/t/p/w1920_and_h1080_bestv2"
 
 headers = {
     "Authorization": os.environ["APIKEY"],
@@ -41,6 +42,7 @@ def discover_movies(genres : str = ""):
     simpleResult = [{
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"],
+        "backdrop_url" : BACKDROP_URL + res["backdrop_path"],
         "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
@@ -86,6 +88,7 @@ def get_movie(id : str = ""):
     simpleResult = {
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"],
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"],
         "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
