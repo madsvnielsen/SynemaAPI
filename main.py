@@ -42,7 +42,7 @@ def discover_movies(genres : str = ""):
     simpleResult = [{
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"],
-        "backdrop_url" : BACKDROP_URL + res["backdrop_path"],
+        "backdrop_url" : BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else "",
         "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
