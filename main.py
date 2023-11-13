@@ -28,6 +28,7 @@ def read_root():
     response = requests.get(url, headers=headers)
     imageurl =  MEDIA_URL +  response.json()["movie_results"][0]["poster_path"]
 
+
     return response.json()
 
 
@@ -36,13 +37,14 @@ def discover_movies(genres : str = ""):
     params = "?with_genres="+genres if genres != "" else ""
     route = "discover/movie"
     url = API_URL + route + params
+    default = "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.udacity.com%2Fblog%2F2021%2F03%2Fcreating-an-html-404-error-web-page.html&psig=AOvVaw1yQVUPOuNPULWSg2o094CB&ust=1699953772395000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCPjCjrjTwIIDFQAAAAAdAAAAABAJ"
     print(url)
     response = requests.get(url, headers=headers).json()
 
     simpleResult = [{
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"],
-        "backdrop_url" : BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else "",
+        "backdrop_url" : BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
         "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
