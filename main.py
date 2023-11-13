@@ -47,6 +47,7 @@ print(os.environ)
 
 API_URL = os.environ["APIURL"]
 MEDIA_URL = "https://www.themoviedb.org/t/p/w300_and_h450_bestv2"
+BACKDROP_URL ="https://image.tmdb.org/t/p/w1920_and_h1080_bestv2"
 
 headers = {
     "Authorization": os.environ["APIKEY"],
@@ -97,6 +98,7 @@ def read_root():
     response = requests.get(url, headers=headers)
     imageurl =  MEDIA_URL +  response.json()["movie_results"][0]["poster_path"]
 
+
     return response.json()
 
 
@@ -105,13 +107,14 @@ def discover_movies(genres : str = ""):
     params = "?with_genres="+genres if genres != "" else ""
     route = "discover/movie"
     url = API_URL + route + params
+    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
     print(url)
     response = requests.get(url, headers=headers).json()
 
     simpleResult = [{
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"],
-        "title": res["title"],
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,        "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
         "release_date" : res["release_date"]
@@ -150,13 +153,14 @@ def get_movie(id : str = ""):
     params = ""
     route = "movie/"+id
     url = API_URL + route + params
+    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
     print(url)
     res = requests.get(url, headers=headers).json()
 
     simpleResult = {
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"],
-        "title": res["title"],
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,        "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
         "release_date" : res["release_date"]
