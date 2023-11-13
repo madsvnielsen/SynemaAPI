@@ -8,7 +8,7 @@ APIKEY
 
 ## Every time
 mac: source /venv/bin/activate
-windows: /venv/bin/activate.bat
+windows: .\venv\Scripts\activate.bat
 
 ## Install dependencies
 pip install requirements.txt
