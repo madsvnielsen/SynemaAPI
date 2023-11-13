@@ -37,15 +37,14 @@ def discover_movies(genres : str = ""):
     params = "?with_genres="+genres if genres != "" else ""
     route = "discover/movie"
     url = API_URL + route + params
-    default = "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.udacity.com%2Fblog%2F2021%2F03%2Fcreating-an-html-404-error-web-page.html&psig=AOvVaw1yQVUPOuNPULWSg2o094CB&ust=1699953772395000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCPjCjrjTwIIDFQAAAAAdAAAAABAJ"
+    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
     print(url)
     response = requests.get(url, headers=headers).json()
 
     simpleResult = [{
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"],
-        "backdrop_url" : BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
-        "title": res["title"],
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,        "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
         "release_date" : res["release_date"]
@@ -84,14 +83,14 @@ def get_movie(id : str = ""):
     params = ""
     route = "movie/"+id
     url = API_URL + route + params
+    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
     print(url)
     res = requests.get(url, headers=headers).json()
 
     simpleResult = {
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"],
-        "backdrop_url": BACKDROP_URL + res["backdrop_path"],
-        "title": res["title"],
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,        "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
         "release_date" : res["release_date"]
