@@ -54,6 +54,38 @@ headers = {
     "accept": "application/json"
 
 }
+@app.delete("/deletewatchlist/{watchlist_id}")
+def delete_watchlist(watchlist_id: str):
+    # Get the document reference for the specified watchlist_id
+    doc_ref = db.collection("watchlists").document(watchlist_id)
+
+    # Check if the document exists
+    if not doc_ref.get().exists:
+        raise HTTPException(status_code=404, detail="Watchlist not found")
+
+    # Delete the entire watchlist document
+    doc_ref.delete()
+
+    return {"message": "Watchlist deleted successfully"}
+
+
+@app.get("/viewwatchlist/{watchlist_id}")
+def view_watchlist(watchlist_id: str):
+    # Get the document reference for the specified watchlist_id
+    doc_ref = db.collection("watchlists").document(watchlist_id)
+
+    # Check if the document exists
+    watchlist_data = doc_ref.get()
+    if not watchlist_data.exists:
+        raise HTTPException(status_code=404, detail="Watchlist not found")
+
+    # Get the data from the watchlist document
+    watchlist_details = watchlist_data.to_dict()
+
+    # Include the watchlist ID in the returned data
+    watchlist_details["watchlist_id"] = watchlist_id
+
+    return watchlist_details
 @app.get("/adddb")
 def read_db():
     doc_ref = db.collection("watchlists").document(str(uuid.uuid4()))
@@ -81,6 +113,21 @@ def add_movie(watchlist_id: str, movie_id: str):
 
     return {"message": "Movie added successfully"}
 
+@app.delete("/deletemovie/{watchlist_id}")
+def delete_movie(watchlist_id: str, movie_id: str):
+    # Get the document reference for the specified watchlist_id
+    doc_ref = db.collection("watchlists").document(watchlist_id)
+
+    # Check if the document exists
+    if not doc_ref.get().exists:
+        raise HTTPException(status_code=404, detail="Watchlist not found")
+
+    # Update the document to remove the movie_id from the "movieIDS" array
+    doc_ref.update({
+        "movieIDS": firestore.ArrayRemove([movie_id])
+    })
+
+    return {"message": "Movie deleted successfully"}
 
 @app.get("/readdb")
 def read_db():
