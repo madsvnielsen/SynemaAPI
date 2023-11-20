@@ -1,14 +1,18 @@
 from behave import *
 
 
+
+
 @given("we have a user")
 def step_impl(context):
-    raise NotImplementedError(u'STEP: Given we have a user')
+    context.user = context.api.user_login("test@test.dk", "1234")
+    pass
 
 
 @when("a user requests discover")
 def step_impl(context):
-    raise NotImplementedError(u'STEP: When a user requests discover')
+    context.discoverResult = context.api.discover_movies()
+    pass
 
 
 @then("a list of movies will be returned")
