@@ -54,7 +54,7 @@ headers = {
     "accept": "application/json"
 
 }
-@app.delete("/deletewatchlist/{watchlist_id}")
+@app.delete("/watchlist/{watchlist_id}")
 def delete_watchlist(watchlist_id: str):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
@@ -69,7 +69,7 @@ def delete_watchlist(watchlist_id: str):
     return {"message": "Watchlist deleted successfully"}
 
 
-@app.get("/viewwatchlist/{watchlist_id}")
+@app.get("/watchlist/{watchlist_id}")
 def view_watchlist(watchlist_id: str):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
@@ -86,7 +86,7 @@ def view_watchlist(watchlist_id: str):
     watchlist_details["watchlist_id"] = watchlist_id
 
     return watchlist_details
-@app.get("/adddb")
+@app.post("/watchlist")
 def read_db():
     doc_ref = db.collection("watchlists").document(str(uuid.uuid4()))
     doc_ref.set({
@@ -97,7 +97,7 @@ def read_db():
     })
     return {"hello"}
 
-@app.post("/addmovie/{watchlist_id}")
+@app.post("/watchlist/{watchlist_id}/movies")
 def add_movie(watchlist_id: str, movie_id: str):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
@@ -113,7 +113,7 @@ def add_movie(watchlist_id: str, movie_id: str):
 
     return {"message": "Movie added successfully"}
 
-@app.delete("/deletemovie/{watchlist_id}")
+@app.delete("/watchlist/{watchlist_id}/movies/{movie_id}")
 def delete_movie(watchlist_id: str, movie_id: str):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
@@ -129,7 +129,7 @@ def delete_movie(watchlist_id: str, movie_id: str):
 
     return {"message": "Movie deleted successfully"}
 
-@app.get("/readdb")
+@app.get("/watchlist")
 def read_db():
     users_ref = db.collection("watchlists")
     docs = users_ref.stream()
