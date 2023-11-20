@@ -1,9 +1,10 @@
 ## First time only
 python -m venv venv
 Edit /venv/bin/activate (.bat if windows)
-to export TWO environemnt variables
+to export THREE environemnt variables
 APIURL
 APIKEY
+DecryptKey
 
 
 ## Every time
@@ -11,7 +12,14 @@ mac: source /venv/bin/activate
 windows: .\venv\Scripts\activate.bat
 
 ## Install dependencies
-pip install requirements.txt
+pip install -r requirements.txt
 
 ## Run server
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+
+## Run unit tests
+python tests.py
+
+## Run cucumber tests
+behave

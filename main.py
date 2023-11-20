@@ -11,6 +11,8 @@ from fastapi import FastAPI
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+from models.CredentialsModel import CredentialsModel
+
 
 key = os.environ["DecryptKey"]
 # using the key
@@ -172,16 +174,15 @@ def discover_movies(genres : str = ""):
     return simpleResult
 
 @app.post("/user/login")
-def user_login():
-    print("Requested!!")
+def user_login(login_request: CredentialsModel):
+
     return {
         "profile" : {
-            "id" : "apitest",
-            "name" : "Api works",
-            "email": "api@net.dk"
+            "id" : "test",
+            "name" : "Api Works",
+            "email": login_request.email
         }
     }
-
 
 
 @app.get("/genres")
@@ -215,3 +216,5 @@ def get_movie(id : str = ""):
 
 
     return simpleResult
+
+
