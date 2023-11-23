@@ -11,6 +11,8 @@ from fastapi import FastAPI
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+
+from models import WatchlistCreationModel
 from models.CredentialsModel import CredentialsModel
 
 
@@ -89,16 +91,14 @@ def view_watchlist(watchlist_id: str):
 
     return watchlist_details
 @app.post("/watchlist")
-def create_watchlist(watchlist_name: str):
-    if not watchlist_name:
-        raise HTTPException(status_code=400, detail="Watchlist name cannot be empty")
+def create_watchlist(creation_request : WatchlistCreationModel):
 
     watchlist_id = str(uuid.uuid4())
 
     doc_ref = db.collection("watchlists").document(watchlist_id)
 
     doc_ref.set({
-        "name": watchlist_name,
+        "name": creation_request.name,
         "userid": "123",
         "movieIDS": []
     })
