@@ -5,6 +5,6 @@ class WatchlistModel(BaseModel):
     name: str
     watchlist_id: str
     userid: str
-    movieIds: []
+    movieIds: list
 
 
