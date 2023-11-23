@@ -12,7 +12,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
-from models.WatchlistCreationModel import WatchlistCreationModel
+from models.WatchlistModel import WatchlistModel
 from models.CredentialsModel import CredentialsModel
 
 
@@ -91,7 +91,7 @@ def view_watchlist(watchlist_id: str):
 
     return watchlist_details
 @app.post("/watchlist")
-def create_watchlist(creation_request : WatchlistCreationModel):
+def create_watchlist(creation_request : WatchlistModel):
 
     watchlist_id = str(uuid.uuid4())
 
