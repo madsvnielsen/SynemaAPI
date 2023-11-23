@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class WatcglistCreationModel(BaseModel):
+class WatchlistCreationModel(BaseModel):
     watchlistName: str
