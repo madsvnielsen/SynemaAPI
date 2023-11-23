@@ -89,13 +89,18 @@ def view_watchlist(watchlist_id: str):
 
     return watchlist_details
 @app.post("/watchlist")
-def read_db():
-    doc_ref = db.collection("watchlists").document(str(uuid.uuid4()))
+def create_watchlist(watchlist_name: str):
+    if not watchlist_name:
+        raise HTTPException(status_code=400, detail="Watchlist name cannot be empty")
+
+    watchlist_id = str(uuid.uuid4())
+
+    doc_ref = db.collection("watchlists").document(watchlist_id)
+
     doc_ref.set({
-        "name": "first list",
+        "name": watchlist_name,
         "userid": "123",
         "movieIDS": []
-
     })
     return {"hello"}
 
