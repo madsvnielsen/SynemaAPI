@@ -6,5 +6,5 @@ Feature: Movie details
 
   Scenario: Reviewing a movie
     Given A movie with id "1234" is reviewed
-    When When a user requests the movie with id "1234"
+    When a user requests the movie with id "1234"
     Then the review will be returned

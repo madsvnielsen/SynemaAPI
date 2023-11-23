@@ -90,14 +90,17 @@ def view_watchlist(watchlist_id: str):
     return watchlist_details
 @app.post("/watchlist")
 def read_db():
-    doc_ref = db.collection("watchlists").document(str(uuid.uuid4()))
-    doc_ref.set({
+
+    new_watchlist = {
         "name": "first list",
         "userid": "123",
         "movieIDS": []
 
-    })
-    return {"hello"}
+    }
+
+    doc_ref = db.collection("watchlists").document(str(uuid.uuid4()))
+    doc_ref.set(new_watchlist)
+    return new_watchlist
 
 @app.post("/watchlist/{watchlist_id}/movies")
 def add_movie(watchlist_id: str, movie_id: str):
