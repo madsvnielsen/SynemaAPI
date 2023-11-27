@@ -3,14 +3,18 @@
 import os
 from http.client import HTTPException
 from typing import Union
+from typing_extensions import Annotated
+
+
 import requests
 import uuid
 
 from cryptography.fernet import Fernet
-from fastapi import FastAPI
+from fastapi import FastAPI, Form
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+
 
 
 from models.CredentialsModel import CredentialsModel
@@ -100,7 +104,7 @@ def create_watchlist(creation_request : WatchlistModel):
     doc_ref.set({
         "name": creation_request.name,
         "userid": "123",
-        "movieIDS": []
+        "movieIds": []
     })
     return {"hello"}
 
@@ -179,13 +183,13 @@ def discover_movies(genres : str = ""):
     return simpleResult
 
 @app.post("/user/login")
-def user_login(login_request: CredentialsModel):
+def user_login(email: Annotated[str, Form()], password: Annotated[str, Form()]):
 
     return {
         "profile" : {
             "id" : "test",
             "name" : "Api Works",
-            "email": login_request.email
+            "email": email
         }
     }
 
