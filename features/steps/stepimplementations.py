@@ -21,7 +21,7 @@ def step_impl(context):
     assert len(context.movie_list) > 0
     for i in context.movie_list:
         assert movie_expected_keys.issubset(i)
-    raise NotImplementedError(u'STEP: Then a list of movies will be returned')
+
 
 
 @then("the movies in the releases section are released recently")
@@ -69,7 +69,8 @@ def step_impl(context, watch_id):
 @then("the added movie is on the watchlist")
 def step_impl(context):
     assert context.watchlist is not None
-    assert context.added_movies in context.watchlist["movie_ids"]
+    print(context.watchlist)
+    assert context.added_movie in context.watchlist["movieIds"]
 
 
 

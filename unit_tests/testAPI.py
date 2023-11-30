@@ -70,7 +70,7 @@ class API:
         return requests.post(url, headers=self.headers, json={"movie_id": "%s" % movie_id}).json()
 
     def get_watchlist(self, watch_id):
-        route = "watchlist/%s/movies" % watch_id
+        route = "watchlist/%s" % watch_id
         url = self.BASE_URL + route
         return requests.get(url, headers=self.headers).json()
 
