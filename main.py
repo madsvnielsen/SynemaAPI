@@ -184,6 +184,29 @@ def discover_movies(genres : str = ""):
 
     return simpleResult
 
+@app.get("/movies/search")
+def search_movies(query : str = ""):
+    params = "?query=" + query
+    route = "search/movie"
+    url = API_URL + route + params
+    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
+    print(url)
+    response = requests.get(url, headers=headers).json()
+    print(response)
+    simpleResult = [{
+        "id" : res["id"],
+        "poster_url" : MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,        "title": res["title"],
+        "description" : res["overview"],
+        "rating" : res["vote_average"],
+        "release_date" : res["release_date"]
+    } for res in response["results"]
+
+    ]
+
+    return simpleResult
+
+
 @app.post("/user/signup")
 def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()], password: Annotated[str, Form()]):
     userid = str(uuid.uuid4())
