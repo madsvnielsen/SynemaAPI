@@ -102,12 +102,12 @@ def create_watchlist(creation_request : WatchlistModel):
     watchlist_id = str(uuid.uuid4())
 
     doc_ref = db.collection("watchlists").document(watchlist_id)
-
     doc_ref.set({
         "name": creation_request.name,
         "userid": "123",
         "movieIds": []
     })
+
     return {"hello"}
 
 @app.post("/watchlist/{watchlist_id}/movies")
@@ -121,7 +121,7 @@ def add_movie(watchlist_id: str, movie_id: str):
 
     # Update the document to add the movie_id to the "movieIDS" array
     doc_ref.update({
-        "movieIDS": firestore.ArrayUnion([movie_id])
+        "movieIds": firestore.ArrayUnion([movie_id])
     })
 
     return {"message": "Movie added successfully"}
@@ -137,17 +137,30 @@ def delete_movie(watchlist_id: str, movie_id: str):
 
     # Update the document to remove the movie_id from the "movieIDS" array
     doc_ref.update({
-        "movieIDS": firestore.ArrayRemove([movie_id])
+        "movieIds": firestore.ArrayRemove([movie_id])
     })
 
     return {"message": "Movie deleted successfully"}
 
 @app.get("/watchlist")
-def read_db():
-    users_ref = db.collection("watchlists")
-    docs = users_ref.stream()
+def read_db(response : Response):
+    lists_ref = db.collection("watchlists")
+    docs = lists_ref.stream()
+    watchlists = []
+    for doc in docs:
+        doc_id = str(doc.id)
+        fields = doc.to_dict()
+        if "movieIds" not in fields:
+            continue
+        watchlists.append({
+            "name" : fields["name"],
+            "watchlist_id" : doc_id,
+            "userid" : fields["userid"],
+            "movieIds" : fields["movieIds"]
+        })
+    return watchlists
 
-    return [{doc.id: doc.to_dict()} for doc in docs]
+
 
 
 @app.get("/")
