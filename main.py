@@ -208,10 +208,20 @@ def search_movies(query : str = ""):
 
 
 @app.post("/user/signup")
-def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()], password: Annotated[str, Form()]):
+def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()], password: Annotated[str, Form()], response: Response):
     userid = str(uuid.uuid4())
 
     doc_ref = db.collection("users").document(userid)
+
+    query = db.collection("users").where(filter=FieldFilter("email", "==", email)).stream()
+
+    doc_id = ""
+    fields = {}
+    for doc in query:
+        doc_id = str(doc.id)
+        fields = doc.to_dict()
+        response.status_code = status.HTTP_306_RESERVED
+        return {"message": "User already exist"}
 
     doc_ref.set({
         "username": username,
