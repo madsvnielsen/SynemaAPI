@@ -166,19 +166,48 @@ def discover_movies(genres : str = ""):
     route = "discover/movie"
     url = API_URL + route + params
     default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
-    print(url)
-    response = requests.get(url, headers=headers).json()
+    #print(url)
+    #response = requests.get(url, headers=headers).json()
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+
+        response_data = response.json()
 
     simpleResult = [{
-        "id" : res["id"],
-        "poster_url" : MEDIA_URL + res["poster_path"],
-        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,        "title": res["title"],
-        "description" : res["overview"],
-        "rating" : res["vote_average"],
-        "release_date" : res["release_date"]
-    } for res in response["results"]
+        "id": res["id"],
+        "poster_url": MEDIA_URL + res["poster_path"],
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
+        "title": res["title"],
+        "description": res["overview"],
+        "rating": res["vote_average"],
+        "release_date": res["release_date"]
+    } for res in response_data.get("results", [])]
 
-    ]
+    return simpleResult
+
+@app.get("/movies/new")
+def new_movies ():
+    route = "movie/now_playing"
+    url = API_URL + route
+    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
+    #print(url)
+    #response = requests.get(url, headers=headers).json()
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+
+        response_data = response.json()
+
+    simpleResult = [{
+        "id": res["id"],
+        "poster_url": MEDIA_URL + res["poster_path"],
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
+        "title": res["title"],
+        "description": res["overview"],
+        "rating": res["vote_average"],
+        "release_date": res["release_date"]
+    } for res in response_data.get("results", [])]
 
     return simpleResult
 
