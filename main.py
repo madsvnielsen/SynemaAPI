@@ -3,6 +3,8 @@
 import os
 from http.client import HTTPException
 from typing import Union
+
+from google.cloud.firestore_v1 import FieldFilter
 from typing_extensions import Annotated
 
 
@@ -10,7 +12,7 @@ import requests
 import uuid
 
 from cryptography.fernet import Fernet
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, Response, status
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
@@ -182,16 +184,50 @@ def discover_movies(genres : str = ""):
 
     return simpleResult
 
-@app.post("/user/login")
-def user_login(email: Annotated[str, Form()], password: Annotated[str, Form()]):
+@app.post("/user/signup")
+def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()], password: Annotated[str, Form()]):
+    userid = str(uuid.uuid4())
 
+    doc_ref = db.collection("users").document(userid)
+
+    doc_ref.set({
+        "username": username,
+        "email": email
+    })
     return {
-        "profile" : {
-            "id" : "test",
-            "name" : "Api Works",
+        "profile": {
+            "id": userid,
+            "name": username,
             "email": email
         }
     }
+
+
+@app.post("/user/login")
+def user_login(email: Annotated[str, Form()], password: Annotated[str, Form()], response: Response):
+
+    users_ref = db.collection("users")
+
+    query = users_ref.where(filter=FieldFilter("email", "==", email)).stream()
+
+    doc_id = ""
+    fields = {}
+    for doc in query:
+        doc_id = str(doc.id)
+        fields = doc.to_dict()
+        break
+    else:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"message": "User not found"}
+
+    return {
+        "profile" : {
+            "id" : doc_id,
+            "name" : fields["username"],
+            "email": fields["email"]
+        }
+    }
+
 
 
 @app.get("/genres")
