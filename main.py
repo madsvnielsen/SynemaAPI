@@ -65,13 +65,14 @@ headers = {
 
 }
 @app.delete("/watchlist/{watchlist_id}")
-def delete_watchlist(watchlist_id: str):
+def delete_watchlist(watchlist_id: str, response: Response):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
 
     # Check if the document exists
     if not doc_ref.get().exists:
-        raise HTTPException(status_code=404, detail="Watchlist not found")
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"message": "Watchlist does not exist"}
 
     # Delete the entire watchlist document
     doc_ref.delete()
@@ -80,20 +81,30 @@ def delete_watchlist(watchlist_id: str):
 
 
 @app.get("/watchlist/{watchlist_id}")
-def view_watchlist(watchlist_id: str):
+def view_watchlist(watchlist_id: str, response : Response):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
+    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
 
     # Check if the document exists
     watchlist_data = doc_ref.get()
     if not watchlist_data.exists:
-        raise HTTPException(status_code=404, detail="Watchlist not found")
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"message": "Watchlist does not exist"}
 
     # Get the data from the watchlist document
     watchlist_details = watchlist_data.to_dict()
 
     # Include the watchlist ID in the returned data
     watchlist_details["watchlist_id"] = watchlist_id
+
+    watchlist_icons = []
+    for i in range(4):
+        if len(watchlist_details["movieIds"]) < i + 1:
+            watchlist_icons.append(default)
+            continue
+        watchlist_icons.append(get_movie(watchlist_details["movieIds"][i])["poster_url"])
+    watchlist_details["icons"] = watchlist_icons
 
     return watchlist_details
 @app.post("/watchlist")
@@ -111,13 +122,14 @@ def create_watchlist(creation_request : WatchlistModel):
     return {"hello"}
 
 @app.post("/watchlist/{watchlist_id}/movies")
-def add_movie(watchlist_id: str, movie_id: str):
+def add_movie(watchlist_id: str, movie_id: Annotated[str, Form()], response: Response):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
 
     # Check if the document exists
     if not doc_ref.get().exists:
-        raise HTTPException(status_code=404, detail="Watchlist not found")
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"message": "Watchlist does not exist"}
 
     # Update the document to add the movie_id to the "movieIDS" array
     doc_ref.update({
@@ -127,13 +139,14 @@ def add_movie(watchlist_id: str, movie_id: str):
     return {"message": "Movie added successfully"}
 
 @app.delete("/watchlist/{watchlist_id}/movies/{movie_id}")
-def delete_movie(watchlist_id: str, movie_id: str):
+def delete_movie(watchlist_id: str, movie_id: str, response : Response):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
 
     # Check if the document exists
     if not doc_ref.get().exists:
-        raise HTTPException(status_code=404, detail="Watchlist not found")
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"message": "Watchlist does not exist"}
 
     # Update the document to remove the movie_id from the "movieIDS" array
     doc_ref.update({
@@ -147,16 +160,26 @@ def read_db(response : Response):
     lists_ref = db.collection("watchlists")
     docs = lists_ref.stream()
     watchlists = []
+    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
     for doc in docs:
         doc_id = str(doc.id)
         fields = doc.to_dict()
         if "movieIds" not in fields:
             continue
+
+        watchlist_icons = []
+        for i in range(4):
+            if len(fields["movieIds"]) < i+1:
+                watchlist_icons.append(default)
+                continue
+            watchlist_icons.append(get_movie(fields["movieIds"][i])["poster_url"])
+
         watchlists.append({
             "name" : fields["name"],
             "watchlist_id" : doc_id,
             "userid" : fields["userid"],
-            "movieIds" : fields["movieIds"]
+            "movieIds" : fields["movieIds"],
+            "icons" : watchlist_icons
         })
     return watchlists
 
