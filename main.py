@@ -84,7 +84,7 @@ def delete_watchlist(watchlist_id: str, response: Response):
 def view_watchlist(watchlist_id: str, response : Response):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
-    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
+    default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
 
     # Check if the document exists
     watchlist_data = doc_ref.get()
@@ -160,7 +160,7 @@ def read_db(response : Response):
     lists_ref = db.collection("watchlists")
     docs = lists_ref.stream()
     watchlists = []
-    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
+    default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
     for doc in docs:
         doc_id = str(doc.id)
         fields = doc.to_dict()
@@ -203,7 +203,7 @@ def discover_movies(genres : str = ""):
     params = "?with_genres="+genres if genres != "" else ""
     route = "discover/movie"
     url = API_URL + route + params
-    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
+    default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
     #print(url)
     #response = requests.get(url, headers=headers).json()
     response = requests.get(url, headers=headers)
@@ -228,7 +228,7 @@ def discover_movies(genres : str = ""):
 def new_movies ():
     route = "movie/now_playing"
     url = API_URL + route
-    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
+    default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
     #print(url)
     #response = requests.get(url, headers=headers).json()
     response = requests.get(url, headers=headers)
@@ -254,7 +254,7 @@ def search_movies(query : str = ""):
     params = "?query=" + query
     route = "search/movie"
     url = API_URL + route + params
-    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
+    default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
     print(url)
     response = requests.get(url, headers=headers).json()
     print(response)
