@@ -6,21 +6,24 @@ from typing import Union
 
 from google.cloud.firestore_v1 import FieldFilter
 from typing_extensions import Annotated
-
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 import requests
 import uuid
 
 from cryptography.fernet import Fernet
-from fastapi import FastAPI, Form, Response, status
+from fastapi import FastAPI, Form, Response, status, Depends, Request
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
-
-
-from models.CredentialsModel import CredentialsModel
+from models.UserModel import User
 from models.WatchlistModel import WatchlistModel
+import datetime
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 key = os.environ["DecryptKey"]
 # using the key
@@ -64,8 +67,38 @@ headers = {
     "accept": "application/json"
 
 }
+
+
+def decode_token(token):
+    user_token = db.collection("tokens").document(token).get()
+    if not user_token.exists:
+        return None
+    user_id = user_token.to_dict()["userId"]
+    user = db.collection("users").document(user_id).get()
+    if not user.exists:
+        return None
+
+    user_data = user.to_dict()
+    return User(
+        name=user_data["username"], email= user_data["email"], id=user_id
+    )
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    print("Token: %s " % token)
+    user = decode_token(token)
+    return user
+
+
+def create_token(userid: str):
+    token = str(uuid.uuid4())
+    token_ref = db.collection("tokens").document(token)
+    current_time = datetime.datetime.now()
+    token_ref.set({"userId": userid, "date" : current_time})
+    return token
+
 @app.delete("/watchlist/{watchlist_id}")
-def delete_watchlist(watchlist_id: str, response: Response):
+def delete_watchlist(watchlist_id: str,  response: Response, current_user: Annotated[User, Depends(get_current_user)] = None):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
 
@@ -81,7 +114,7 @@ def delete_watchlist(watchlist_id: str, response: Response):
 
 
 @app.get("/watchlist/{watchlist_id}")
-def view_watchlist(watchlist_id: str, response : Response):
+def view_watchlist(watchlist_id: str, response : Response, current_user: Annotated[User, Depends(get_current_user)] = None):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
     default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
@@ -107,22 +140,27 @@ def view_watchlist(watchlist_id: str, response : Response):
     watchlist_details["icons"] = watchlist_icons
 
     return watchlist_details
-@app.post("/watchlist")
-def create_watchlist(creation_request : WatchlistModel):
 
+
+@app.post("/watchlist")
+def create_watchlist(response : Response, creation_request: WatchlistModel, current_user: Annotated[User, Depends(get_current_user)] = None):
+    if current_user is None:
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+        return {"message": "Unauthorized"}
     watchlist_id = str(uuid.uuid4())
 
     doc_ref = db.collection("watchlists").document(watchlist_id)
     doc_ref.set({
         "name": creation_request.name,
-        "userid": "123",
+        "userid": current_user.id,
         "movieIds": []
     })
 
     return {"hello"}
 
+
 @app.post("/watchlist/{watchlist_id}/movies")
-def add_movie(watchlist_id: str, movie_id: Annotated[str, Form()], response: Response):
+def add_movie(watchlist_id: str, movie_id: Annotated[str, Form()], response: Response, current_user: Annotated[User, Depends(get_current_user)] = None):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
 
@@ -138,8 +176,9 @@ def add_movie(watchlist_id: str, movie_id: Annotated[str, Form()], response: Res
 
     return {"message": "Movie added successfully"}
 
+
 @app.delete("/watchlist/{watchlist_id}/movies/{movie_id}")
-def delete_movie(watchlist_id: str, movie_id: str, response : Response):
+def delete_movie(watchlist_id: str, movie_id: str, response: Response, current_user: Annotated[User, Depends(get_current_user)] = None):
     # Get the document reference for the specified watchlist_id
     doc_ref = db.collection("watchlists").document(watchlist_id)
 
@@ -156,8 +195,8 @@ def delete_movie(watchlist_id: str, movie_id: str, response : Response):
     return {"message": "Movie deleted successfully"}
 
 @app.get("/watchlist")
-def read_db(response : Response):
-    lists_ref = db.collection("watchlists")
+def read_db(request: Request, response : Response, current_user: Annotated[User, Depends(get_current_user)] = None, ):
+    lists_ref = db.collection("watchlists").where(filter=FieldFilter("userid", "==", current_user.id))
     docs = lists_ref.stream()
     watchlists = []
     default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
@@ -187,15 +226,13 @@ def read_db(response : Response):
 
 
 @app.get("/")
-def read_root():
-    params = "?external_source=imdb_id"
-    route = "find/tt3113782"
-    url = API_URL + route + params
-    response = requests.get(url, headers=headers)
-    imageurl =  MEDIA_URL +  response.json()["movie_results"][0]["poster_path"]
+def read_root(current_user: Annotated[User, Depends(get_current_user)] = None):
+    if current_user is None:
+        return {"detail" : "You are not authorized"}
+
+    return {"detail" : "Authorized as %s" % current_user.name}
 
 
-    return response.json()
 
 
 @app.get("/movies/discover")
@@ -251,13 +288,14 @@ def new_movies ():
 
 @app.get("/movies/search")
 def search_movies(query : str = ""):
+
     params = "?query=" + query
     route = "search/movie"
     url = API_URL + route + params
     default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
-    print(url)
+
     response = requests.get(url, headers=headers).json()
-    print(response)
+
     simpleResult = [{
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
@@ -292,11 +330,15 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
         "username": username,
         "email": email
     })
+
+
+
     return {
         "profile": {
             "id": userid,
             "name": username,
-            "email": email
+            "email": email,
+            "token": "Bearer " + create_token(doc_id)
         }
     }
 
@@ -318,11 +360,14 @@ def user_login(email: Annotated[str, Form()], password: Annotated[str, Form()], 
         response.status_code = status.HTTP_404_NOT_FOUND
         return {"message": "User not found"}
 
+    token = create_token(doc_id)
+
     return {
         "profile" : {
             "id" : doc_id,
             "name" : fields["username"],
-            "email": fields["email"]
+            "email": fields["email"],
+            "token" : "Bearer " + token
         }
     }
 
@@ -359,5 +404,14 @@ def get_movie(id : str = ""):
 
 
     return simpleResult
+
+@app.post("/token")
+async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response : Response):
+    req = user_login(form_data.username, form_data.password, response)
+    if "profile" not in req:
+        response.status_code = status.HTTP_401_UNAUTHORIZED;
+        return {"detail": "Incorrect username or password"}
+
+    return {"access_token": req["profile"]["token"], "token_type": "bearer"}
 
 
