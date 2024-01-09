@@ -417,14 +417,14 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], resp
     return {"access_token": req["profile"]["token"], "token_type": "bearer"}
 
 @app.post("/movie/{id}/reviews")
-def get_movie_reviews(id : str, creation_request : ReviewModel):
+def get_movie_reviews(id : str, creation_request : ReviewModel,current_user: Annotated[User, Depends(get_current_user)] = None):
 
     review_id = str(uuid.uuid4())
 
     doc_ref = db.collection("reviews").document(review_id)
     doc_ref.set({
         "review": creation_request.reviewText,
-        "userid":"123",
+        "userid":current_user.id,
         "rating": creation_request.rating,
     })
 
