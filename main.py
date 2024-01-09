@@ -99,6 +99,23 @@ def create_token(userid: str):
     token_ref.set({"userId": userid, "date" : current_time})
     return token
 
+def get_or_create_token(userid : str):
+    tokens = list(db.collection("tokens").where(filter=FieldFilter("userId", "==", userid)).stream())
+    print(len(tokens))
+    if len(tokens) > 0:
+        to_return = tokens[0].id
+        old_tokens = (db.collection("tokens").where(filter=FieldFilter("userId", "==", userid)).stream())
+        for doc in old_tokens:
+            if doc.id == to_return:
+                continue
+            db.collection("tokens").document(doc.id).delete()
+
+        return to_return
+    return create_token(userid)
+
+
+
+
 @app.delete("/watchlist/{watchlist_id}")
 def delete_watchlist(watchlist_id: str,  response: Response, current_user: Annotated[User, Depends(get_current_user)] = None):
     # Get the document reference for the specified watchlist_id
@@ -349,7 +366,6 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
 def user_login(email: Annotated[str, Form()], password: Annotated[str, Form()], response: Response):
 
     users_ref = db.collection("users")
-
     query = users_ref.where(filter=FieldFilter("email", "==", email)).stream()
 
     doc_id = ""
@@ -362,7 +378,7 @@ def user_login(email: Annotated[str, Form()], password: Annotated[str, Form()], 
         response.status_code = status.HTTP_404_NOT_FOUND
         return {"message": "User not found"}
 
-    token = create_token(doc_id)
+    token = get_or_create_token(doc_id)
 
     return {
         "profile" : {
@@ -373,6 +389,13 @@ def user_login(email: Annotated[str, Form()], password: Annotated[str, Form()], 
         }
     }
 
+
+@app.post("/token/verify")
+def verify_token(token: Annotated[str, Form()]):
+    user = decode_token(token.split("Bearer ")[1])
+    if user is None :
+        return False
+    return True
 
 
 @app.get("/genres")
