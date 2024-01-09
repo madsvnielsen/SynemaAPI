@@ -5,6 +5,8 @@ from http.client import HTTPException
 from typing import Union
 
 from google.cloud.firestore_v1 import FieldFilter
+from google.cloud.firestore_v1.field_path import FieldPath
+
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
@@ -351,7 +353,6 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
     })
 
 
-
     return {
         "profile": {
             "id": userid,
@@ -397,6 +398,15 @@ def verify_token(token: Annotated[str, Form()]):
         return False
     return True
 
+@app.post("/token/clear")
+def clear_token(current_user: Annotated[User, Depends(get_current_user)] = None):
+    if current_user is None :
+        return {"detail" : "Unauthorized"}
+    tokens = (db.collection("tokens").where(filter=FieldFilter("userId", "==", current_user.id)).stream())
+    for doc in tokens:
+        db.collection("tokens").document(doc.id).delete()
+    return True
+
 
 @app.get("/genres")
 def read_root():
@@ -437,7 +447,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], resp
         response.status_code = status.HTTP_401_UNAUTHORIZED;
         return {"detail": "Incorrect username or password"}
 
-    return {"access_token": req["profile"]["token"], "token_type": "bearer"}
+    return {"access_token": req["profile"]["token"].split("Bearer ")[1], "token_type": "bearer"}
 
 @app.post("/movie/{id}/reviews")
 def get_movie_reviews(id : str, creation_request : ReviewModel,current_user: Annotated[User, Depends(get_current_user)] = None):
