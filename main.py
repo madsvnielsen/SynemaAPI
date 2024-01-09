@@ -421,11 +421,12 @@ def get_movie_reviews(id : str, creation_request : ReviewModel,current_user: Ann
 
     review_id = str(uuid.uuid4())
 
-    doc_ref = db.collection("reviews").document(review_id)
+    doc_ref = db.collection("reviews").collection(id).document(review_id)
     doc_ref.set({
         "review": creation_request.reviewText,
         "userid":current_user.id,
         "rating": creation_request.rating,
+        "movieid": id
     })
 
     return {"hello"}
