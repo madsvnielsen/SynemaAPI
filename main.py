@@ -17,8 +17,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
-
-
+from models.ReviewModel import ReviewModel
 from models.CredentialsModel import CredentialsModel
 from models.WatchlistModel import WatchlistModel
 
@@ -360,4 +359,32 @@ def get_movie(id : str = ""):
 
     return simpleResult
 
+@app.post("/movie/{id}/reviews")
+def get_movie_reviews(id : str, creation_request : ReviewModel):
 
+    review_id = str(uuid.uuid4())
+
+    doc_ref = db.collection("reviews").document(review_id)
+    doc_ref.set({
+        "review": creation_request.reviewText,
+        "userid":"123",
+        "rating": creation_request.rating,
+    })
+
+    return {"hello"}
+
+
+@app.get("/movie/{movie_id}/reviews")
+async def get_reviews_for_movie(movie_id: str):
+    reviews = []
+
+    reviews_collection = db.collection("reviews").where("movie_id", "==", movie_id).stream()
+
+    for review in reviews_collection:
+        review_data = review.to_dict()
+        reviews.append(ReviewModel(**review_data))
+
+    if not reviews:
+        raise HTTPException(status_code=404, detail="No reviews found for the given movie ID")
+
+    return reviews
