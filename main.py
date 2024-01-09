@@ -414,19 +414,22 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], resp
         response.status_code = status.HTTP_401_UNAUTHORIZED;
         return {"detail": "Incorrect username or password"}
 
-    return {"access_token": req["profile"]["token"], "token_type": "bearer"}
+    return {"access_token": req["profile"]["token"].split("Bearer ")[1], "token_type": "bearer"}
 
 @app.post("/movie/{id}/reviews")
 def get_movie_reviews(id : str, creation_request : ReviewModel,current_user: Annotated[User, Depends(get_current_user)] = None):
+    if current_user is None:
+        return {"detail" : "You are not authorized"}
 
     review_id = str(uuid.uuid4())
 
-    doc_ref = db.collection("reviews").collection(id).document(review_id)
+    doc_ref = db.collection("reviews").document(id).collection("entities").document(review_id)
     doc_ref.set({
         "review": creation_request.reviewText,
         "userid":current_user.id,
         "rating": creation_request.rating,
-        "movieid": id
+        "movieid": id,
+        "username": current_user.name,
     })
 
     return {"hello"}
@@ -436,13 +439,11 @@ def get_movie_reviews(id : str, creation_request : ReviewModel,current_user: Ann
 async def get_reviews_for_movie(movie_id: str):
     reviews = []
 
-    reviews_collection = db.collection("reviews").where("movie_id", "==", movie_id).stream()
+    reviews_collection = db.collection("reviews").document(movie_id).collection("entities").stream()
 
     for review in reviews_collection:
         review_data = review.to_dict()
-        reviews.append(ReviewModel(**review_data))
+        reviews.append(review_data)
 
-    if not reviews:
-        raise HTTPException(status_code=404, detail="No reviews found for the given movie ID")
 
     return reviews
