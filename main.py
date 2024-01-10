@@ -483,7 +483,7 @@ def create_review(id : str, creation_request : ReviewModel,current_user: Annotat
 
 
 @app.get("/movie/{movie_id}/reviews")
-async def get_reviews_for_movie(movie_id: str):
+def get_reviews_for_movie(movie_id: str):
     reviews = []
 
     reviews_collection = db.collection("reviews").document(movie_id).collection("entities").stream()
@@ -496,3 +496,22 @@ async def get_reviews_for_movie(movie_id: str):
     return reviews
 
 
+@app.get("/user/reviews/")
+def get_reviews_for_user(current_user: User = Depends(get_current_user)):
+    reviews = []
+
+    # Assuming each movie has a collection of reviews, and within that collection, each review has a unique review_id.
+    # This is a mock structure; modify this according to your database structure.
+    # Also, ensure that the user ID or username is stored in each review document to identify the user.
+
+    # Querying each movie's collection to find reviews made by the user.
+    all_reviews_q = db.collection_group('entities')
+    all_reviews_ref = all_reviews_q.stream()
+    for doc in all_reviews_ref:
+        print(f'Document: {doc.to_dict()}')
+        review_data = doc.to_dict()
+
+        if review_data["userid"] == current_user.id:
+            reviews.append(review_data)
+
+    return reviews
