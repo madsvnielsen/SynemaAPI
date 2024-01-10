@@ -5,6 +5,8 @@ from http.client import HTTPException
 from typing import Union
 
 from google.cloud.firestore_v1 import FieldFilter
+from google.cloud.firestore_v1.field_path import FieldPath
+
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
@@ -351,7 +353,6 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
     })
 
 
-
     return {
         "profile": {
             "id": userid,
@@ -395,6 +396,15 @@ def verify_token(token: Annotated[str, Form()]):
     user = decode_token(token.split("Bearer ")[1])
     if user is None :
         return False
+    return True
+
+@app.post("/token/clear")
+def clear_token(current_user: Annotated[User, Depends(get_current_user)] = None):
+    if current_user is None :
+        return {"detail" : "Unauthorized"}
+    tokens = (db.collection("tokens").where(filter=FieldFilter("userId", "==", current_user.id)).stream())
+    for doc in tokens:
+        db.collection("tokens").document(doc.id).delete()
     return True
 
 
