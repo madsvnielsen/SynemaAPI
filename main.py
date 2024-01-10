@@ -484,7 +484,7 @@ def create_review(id : str, creation_request : ReviewModel,current_user: Annotat
 @app.delete("/movie/{movie_id}/reviews")
 def delete_review(movie_id: str, current_user: Annotated[User, Depends(get_current_user)] = None):
     existing_reviews = list((db.collection("reviews")
-                             .document(id)
+                             .document(movie_id)
                              .collection("entities")
                              .where(filter=FieldFilter("userid", "==", current_user.id))
                              .stream()))
@@ -492,7 +492,8 @@ def delete_review(movie_id: str, current_user: Annotated[User, Depends(get_curre
 
     # Get the document reference for the specified review
     if len(existing_reviews) > 0:
-        db.collection("reviews").document(movie_id).collection("entities").delete()
+        for review in existing_reviews:
+            review.reference.delete()
 
     return {"message": "Review deleted successfully"}
 
