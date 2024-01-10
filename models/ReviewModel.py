@@ -6,6 +6,7 @@ class ReviewModel(BaseModel):
     movieid: str
     userid: str
     rating: int
+    username: str
 
 
 
