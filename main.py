@@ -444,16 +444,30 @@ def create_review(id : str, creation_request : ReviewModel,current_user: Annotat
     if current_user is None:
         return {"detail" : "You are not authorized"}
 
-    review_id = str(uuid.uuid4())
+    existing_reviews = list((db.collection("reviews")
+                             .document(id)
+                             .collection("entities")
+                             .where(filter=FieldFilter("userid", "==", current_user.id))
+                             .stream()))
 
-    doc_ref = db.collection("reviews").document(id).collection("entities").document(review_id)
-    doc_ref.set({
+    if len(existing_reviews) == 0:
+        review_id = str(uuid.uuid4())
+        doc_ref = db.collection("reviews").document(id).collection("entities").document(review_id)
+        doc_ref.set({
         "reviewText": creation_request.reviewText,
         "userid":current_user.id,
         "rating": creation_request.rating,
         "movieid": id,
         "username": current_user.name,
     })
+
+    if len(existing_reviews) > 0:
+        #User already has review
+        existing_reviews[0].reference.update({
+            "reviewText": creation_request.reviewText,
+            "rating": creation_request.rating,
+        })
+
 
     return {"hello"}
 
@@ -470,3 +484,5 @@ async def get_reviews_for_movie(movie_id: str):
 
 
     return reviews
+
+
