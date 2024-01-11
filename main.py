@@ -363,7 +363,7 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
             "email": email,
             "token": "Bearer " + create_token(doc_id),
             "bio":"",
-            "profilePicture": "https://drive.google.com/file/d/1bQTYTw_d2xCcPQ5qh9h_Lw-TU7123-i_/view?usp=sharing"
+            "profilePicture": "https://i.postimg.cc/3wJzmXPm/Avatar-Maker.png"
         }
     }
 
