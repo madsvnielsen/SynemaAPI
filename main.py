@@ -349,7 +349,10 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
 
     doc_ref.set({
         "username": username,
-        "email": email
+        "email": email,
+        "bio": "",
+        "profilePicture": "https://drive.google.com/file/d/1bQTYTw_d2xCcPQ5qh9h_Lw-TU7123-i_/view?usp=sharing",
+
     })
 
 
@@ -358,7 +361,9 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
             "id": userid,
             "name": username,
             "email": email,
-            "token": "Bearer " + create_token(doc_id)
+            "token": "Bearer " + create_token(doc_id),
+            "bio":"",
+            "profilePicture": "https://drive.google.com/file/d/1bQTYTw_d2xCcPQ5qh9h_Lw-TU7123-i_/view?usp=sharing"
         }
     }
 
@@ -386,7 +391,10 @@ def user_login(email: Annotated[str, Form()], password: Annotated[str, Form()], 
             "id" : doc_id,
             "name" : fields["username"],
             "email": fields["email"],
-            "token" : "Bearer " + token
+            "token" : "Bearer " + token,
+            "bio": fields["bio"],
+            "profilePicture":fields["profilePicture"],
+
         }
     }
 
@@ -515,12 +523,6 @@ def get_reviews_for_movie(movie_id: str):
 @app.get("/user/reviews/")
 def get_reviews_for_user(current_user: User = Depends(get_current_user)):
     reviews = []
-
-    # Assuming each movie has a collection of reviews, and within that collection, each review has a unique review_id.
-    # This is a mock structure; modify this according to your database structure.
-    # Also, ensure that the user ID or username is stored in each review document to identify the user.
-
-    # Querying each movie's collection to find reviews made by the user.
     all_reviews_q = db.collection_group('entities')
     all_reviews_ref = all_reviews_q.stream()
     for doc in all_reviews_ref:
@@ -533,3 +535,16 @@ def get_reviews_for_user(current_user: User = Depends(get_current_user)):
     return reviews
 
 
+@app.get("/user/{username}")
+def view_watchlist(username: str, response : Response, current_user: Annotated[User, Depends(get_current_user)] = None):
+    # Get the document reference for the specified username
+    users_q = db.collection('users').where(filter=FieldFilter('username','==', username))
+    users_ref = users_q.stream()
+    for doc in users_ref:
+        print(f'Document: {doc.to_dict()}')
+        userdata = doc.to_dict()
+
+        if userdata["username"] == username:
+            return userdata
+
+    return userdata
