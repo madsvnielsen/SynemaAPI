@@ -469,7 +469,8 @@ def get_movie(id : str = ""):
         "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
-        "release_date" : res["release_date"]
+        "release_date" : res["release_date"],
+        "tagline" : res["tagline"]
     }
     return simpleResult
 
