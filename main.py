@@ -278,7 +278,7 @@ def discover_movies(genres : str = ""):
         "description": res["overview"],
         "rating": res["vote_average"],
         "release_date": res["release_date"],
-        "tagline": res["tagline"]
+        "tagline": res["tagline"] if res["tagline"] is not None else ""
 
     } for res in response_data.get("results", [])]
 
@@ -306,7 +306,7 @@ def similar_movies(movie_id : str = ""):
         "description": res["overview"],
         "rating": res["vote_average"],
         "release_date": res["release_date"],
-        "tagline": res["tagline"]
+        "tagline": res["tagline"] if res["tagline"] is not None else ""
     } for res in response_data["results"]]
 
 
@@ -332,7 +332,7 @@ def new_movies ():
         "description": res["overview"],
         "rating": res["vote_average"],
         "release_date": res["release_date"],
-        "tagline": res["tagline"]
+        "tagline": res["tagline"] if res["tagline"] is not None else ""
     } for res in response_data.get("results", [])]
 
     return simpleResult
@@ -354,7 +354,7 @@ def search_movies(query : str = ""):
         "description" : res["overview"],
         "rating" : res["vote_average"],
         "release_date" : res["release_date"],
-        "tagline": res["tagline"]
+        "tagline": res["tagline"] if res["tagline"] is not None else ""
     } for res in response["results"]
 
     ]
@@ -475,7 +475,7 @@ def get_movie(id : str = ""):
         "description" : res["overview"],
         "rating" : res["vote_average"],
         "release_date" : res["release_date"],
-        "tagline" : res["tagline"]
+        "tagline": res["tagline"] if res["tagline"] is not None else ""
     }
     return simpleResult
 
