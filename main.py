@@ -351,7 +351,7 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
         "username": username,
         "email": email,
         "bio": "",
-        "profilePicture": "https://drive.google.com/file/d/1bQTYTw_d2xCcPQ5qh9h_Lw-TU7123-i_/view?usp=sharing",
+        "profilePicture": "https://i.postimg.cc/3wJzmXPm/Avatar-Maker.png",
 
     })
 
@@ -363,7 +363,7 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
             "email": email,
             "token": "Bearer " + create_token(doc_id),
             "bio":"",
-            "profilePicture": "https://drive.google.com/file/d/1bQTYTw_d2xCcPQ5qh9h_Lw-TU7123-i_/view?usp=sharing"
+            "profilePicture": "https://i.postimg.cc/3wJzmXPm/Avatar-Maker.png"
         }
     }
 
@@ -536,7 +536,7 @@ def get_reviews_for_user(current_user: User = Depends(get_current_user)):
 
 
 @app.get("/user/{username}")
-def view_watchlist(username: str, response : Response, current_user: Annotated[User, Depends(get_current_user)] = None):
+def user_by_username(username: str, response : Response, current_user: Annotated[User, Depends(get_current_user)] = None):
     # Get the document reference for the specified username
     users_q = db.collection('users').where(filter=FieldFilter('username','==', username))
     users_ref = users_q.stream()
