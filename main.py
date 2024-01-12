@@ -439,14 +439,34 @@ def get_movie(id : str = ""):
     simpleResult = {
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default ,
-        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,        "title": res["title"],
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
+        "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
         "release_date" : res["release_date"]
     }
-
-
     return simpleResult
+
+@app.get("/movie/{id}/credits")
+def get_movie_credits(id : str = ""):
+    params = ""
+    route = "movie/" + id +"/credits"
+    url = API_URL + route + params
+    res = requests.get(url, headers=headers).json()
+    default = "https://www.udacity.com/blog/wp-content/uploads/2021/02/img8.png"
+
+    credit_data = []
+
+
+    for actor in res["cast"]:
+        credit_data.append({
+            "character": actor["character"],
+            "name": actor["name"],
+            "picture_path" : MEDIA_URL + actor["profile_path"] if actor["profile_path"] is not None else default,
+        })
+
+    return credit_data
+
 
 @app.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response : Response):
