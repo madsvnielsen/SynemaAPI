@@ -550,7 +550,8 @@ def user_by_username(username: str, response : Response, current_user: Annotated
             "email": userdata["email"],
             "bio": userdata["bio"],
             "profilePicture":userdata["profilePicture"],
-
+            "id": userdata["id"]
         })
     return userlist
+
 
