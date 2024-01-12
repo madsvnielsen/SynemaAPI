@@ -555,3 +555,22 @@ def user_by_username(username: str, response : Response, current_user: Annotated
     return userlist
 
 
+@app.get("/user/{id}")
+def user_by_id(username: str, response : Response, current_user: Annotated[User, Depends(get_current_user)] = None):
+    userlist=[]
+    # Get the document reference for the specified username
+    users_q = db.collection('users').where(filter=FieldFilter('id','==', username))
+    users_ref = users_q.stream()
+    for doc in users_ref:
+        print(f'Document: {doc.to_dict()}')
+        userdata = doc.to_dict()
+
+        userlist.append( {
+            "name" : userdata["username"],
+            "email": userdata["email"],
+            "bio": userdata["bio"],
+            "profilePicture":userdata["profilePicture"],
+            "id": userdata["id"]
+        })
+    return userlist
+
