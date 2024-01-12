@@ -277,7 +277,9 @@ def discover_movies(genres : str = ""):
         "title": res["title"],
         "description": res["overview"],
         "rating": res["vote_average"],
-        "release_date": res["release_date"]
+        "release_date": res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
+
     } for res in response_data.get("results", [])]
 
     return simpleResult
@@ -303,7 +305,8 @@ def similar_movies(movie_id : str = ""):
         "title": res["title"],
         "description": res["overview"],
         "rating": res["vote_average"],
-        "release_date": res["release_date"]
+        "release_date": res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
     } for res in response_data["results"]]
 
 
@@ -328,7 +331,8 @@ def new_movies ():
         "title": res["title"],
         "description": res["overview"],
         "rating": res["vote_average"],
-        "release_date": res["release_date"]
+        "release_date": res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
     } for res in response_data.get("results", [])]
 
     return simpleResult
@@ -346,10 +350,12 @@ def search_movies(query : str = ""):
     simpleResult = [{
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
-        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,        "title": res["title"],
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
+        "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
-        "release_date" : res["release_date"]
+        "release_date" : res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
     } for res in response["results"]
 
     ]
@@ -470,7 +476,7 @@ def get_movie(id : str = ""):
         "description" : res["overview"],
         "rating" : res["vote_average"],
         "release_date" : res["release_date"],
-        "tagline" : res["tagline"]
+        "tagline": res["tagline"] if "tagline" in res else ""
     }
     return simpleResult
 
