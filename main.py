@@ -272,7 +272,7 @@ def discover_movies(genres : str = ""):
 
     simpleResult = [{
         "id": res["id"],
-        "poster_url": MEDIA_URL + res["poster_path"],
+        "poster_url":  MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
         "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
         "title": res["title"],
         "description": res["overview"],
@@ -298,7 +298,7 @@ def similar_movies(movie_id : str = ""):
 
     return [{
         "id": res["id"],
-        "poster_url": MEDIA_URL + res["poster_path"],
+        "poster_url":  MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
         "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
         "title": res["title"],
         "description": res["overview"],
@@ -323,7 +323,7 @@ def new_movies ():
 
     simpleResult = [{
         "id": res["id"],
-        "poster_url": MEDIA_URL + res["poster_path"],
+        "poster_url":  MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
         "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
         "title": res["title"],
         "description": res["overview"],
