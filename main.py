@@ -544,6 +544,13 @@ def user_by_username(username: str, response : Response, current_user: Annotated
     for doc in users_ref:
         print(f'Document: {doc.to_dict()}')
         userdata = doc.to_dict()
-        userlist.append(userdata)
+
+        userlist.append( {
+            "name" : userdata["username"],
+            "email": userdata["email"],
+            "bio": userdata["bio"],
+            "profilePicture":userdata["profilePicture"],
+
+        })
     return userlist
 
