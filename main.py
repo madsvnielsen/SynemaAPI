@@ -570,7 +570,31 @@ def user_by_username(username: str, response : Response, current_user: Annotated
             "email": userdata["email"],
             "bio": userdata["bio"],
             "profilePicture":userdata["profilePicture"],
-
+            "id": doc.id
         })
     return userlist
+
+
+@app.get("/user/profile/{userid}")
+def user_by_id(userid: str, response : Response, current_user: Annotated[User, Depends(get_current_user)] = None):
+
+    # Get the document reference for the specified username
+    users_q = db.collection('users').document(userid)
+    users_ref = users_q.get()
+    if not users_ref.exists:
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+        return {"details": "no user"}
+
+    print(f'Document: {users_ref.to_dict()}')
+    userdata = users_ref.to_dict()
+
+    return {
+        "name" : userdata["username"],
+        "email": userdata["email"],
+        "bio": userdata["bio"],
+        "profilePicture":userdata["profilePicture"],
+        "id": users_ref.id
+    }
+
+
 
