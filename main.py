@@ -537,14 +537,13 @@ def get_reviews_for_user(current_user: User = Depends(get_current_user)):
 
 @app.get("/user/{username}")
 def user_by_username(username: str, response : Response, current_user: Annotated[User, Depends(get_current_user)] = None):
+    userlist=[]
     # Get the document reference for the specified username
     users_q = db.collection('users').where(filter=FieldFilter('username','==', username))
     users_ref = users_q.stream()
     for doc in users_ref:
         print(f'Document: {doc.to_dict()}')
         userdata = doc.to_dict()
+        userlist.append(userdata)
+    return userlist
 
-        if userdata["username"] == username:
-            return userdata
-
-    return userdata
