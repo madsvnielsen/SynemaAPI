@@ -243,6 +243,34 @@ def read_db(request: Request, response : Response, current_user: Annotated[User,
         })
     return watchlists
 
+@app.get("/watchlist/user/{user_id}")
+def read_other_user_db(request: Request, response : Response, user_id : str ):
+    lists_ref = db.collection("watchlists").where(filter=FieldFilter("userid", "==", user_id))
+    docs = lists_ref.stream()
+    watchlists = []
+    default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
+    for doc in docs:
+        doc_id = str(doc.id)
+        fields = doc.to_dict()
+        if "movieIds" not in fields:
+            continue
+
+        watchlist_icons = []
+        for i in range(4):
+            if len(fields["movieIds"]) < i+1:
+                watchlist_icons.append(default)
+                continue
+            watchlist_icons.append(get_movie(fields["movieIds"][i])["poster_url"])
+
+        watchlists.append({
+            "name" : fields["name"],
+            "watchlist_id" : doc_id,
+            "userid" : fields["userid"],
+            "movieIds" : fields["movieIds"],
+            "icons" : watchlist_icons
+        })
+    return watchlists
+
 
 
 
@@ -496,10 +524,27 @@ def get_movie_credits(id : str = ""):
             "character": actor["character"],
             "name": actor["name"],
             "picture_path" : MEDIA_URL + actor["profile_path"] if actor["profile_path"] is not None else default,
+            "id" : str(actor["id"])
         })
 
     return credit_data
 
+@app.get("/actor/{id}")
+def get_actor_details(id : str = ""):
+    route = "person/"+id
+    url = API_URL + route
+    res = requests.get(url, headers=headers).json()
+    default = "https://www.google.com/url?sa=i&url=https%3A%2F%2Fuxwing.com%2Fno-profile-picture-icon%2F&psig=AOvVaw3iMZCY67eG17B8pGdaqRm4&ust=1705145407673000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCJD4geff14MDFQAAAAAdAAAAABAD"
+    return {
+        "id" : id,
+        "bio" : res["biography"],
+        "dob": res["birthday"],
+        "dod": res["deathday"],
+        "name": res["name"],
+        "deps": res["known_for_department"],
+        "pob": res["place_of_birth"],
+        "pic" : MEDIA_URL + res["profile_path"] if res["profile_path"] is not None else default,
+    }
 
 @app.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response : Response):
@@ -574,7 +619,7 @@ def get_reviews_for_movie(movie_id: str):
 
 
 @app.get("/user/reviews/")
-def get_reviews_for_user(current_user: User = Depends(get_current_user)):
+def get_own_reviews(current_user: User = Depends(get_current_user)):
     reviews = []
     all_reviews_q = db.collection_group('entities')
     all_reviews_ref = all_reviews_q.stream()
@@ -583,6 +628,20 @@ def get_reviews_for_user(current_user: User = Depends(get_current_user)):
         review_data = doc.to_dict()
 
         if review_data["userid"] == current_user.id:
+            reviews.append(review_data)
+
+    return reviews
+
+@app.get("/user/{user_id}/reviews/")
+def get_reviews_for_user(user_id : str):
+    reviews = []
+    all_reviews_q = db.collection_group('entities')
+    all_reviews_ref = all_reviews_q.stream()
+    for doc in all_reviews_ref:
+        print(f'Document: {doc.to_dict()}')
+        review_data = doc.to_dict()
+
+        if review_data["userid"] == user_id:
             reviews.append(review_data)
 
     return reviews
