@@ -243,6 +243,34 @@ def read_db(request: Request, response : Response, current_user: Annotated[User,
         })
     return watchlists
 
+@app.get("/watchlist")
+def read_other_user_db(request: Request, response : Response, user_id : str ):
+    lists_ref = db.collection("watchlists").where(filter=FieldFilter("userid", "==", user_id))
+    docs = lists_ref.stream()
+    watchlists = []
+    default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
+    for doc in docs:
+        doc_id = str(doc.id)
+        fields = doc.to_dict()
+        if "movieIds" not in fields:
+            continue
+
+        watchlist_icons = []
+        for i in range(4):
+            if len(fields["movieIds"]) < i+1:
+                watchlist_icons.append(default)
+                continue
+            watchlist_icons.append(get_movie(fields["movieIds"][i])["poster_url"])
+
+        watchlists.append({
+            "name" : fields["name"],
+            "watchlist_id" : doc_id,
+            "userid" : fields["userid"],
+            "movieIds" : fields["movieIds"],
+            "icons" : watchlist_icons
+        })
+    return watchlists
+
 
 
 
