@@ -532,7 +532,7 @@ def get_movie_credits(id : str = ""):
 @app.get("/movie/{id/images")
 def get_movie_images(id : str = ""):
     params = ""
-    route = "movie/" + id + "/credits"
+    route = "movie/" + id + "/images"
     url = API_URL + route + params
     res = requests.get(url, headers=headers).json()
     default = "https://www.google.com/url?sa=i&url=https%3A%2F%2Fuxwing.com%2Fno-profile-picture-icon%2F&psig=AOvVaw3iMZCY67eG17B8pGdaqRm4&ust=1705145407673000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCJD4geff14MDFQAAAAAdAAAAABAD"
@@ -765,29 +765,26 @@ def follow_user(userid: str, currentUserId: str):
 
 @app.get("/user/{userid}/followers")
 def get_followers(userid:str):
+    followerlist=[]
     users_q = db.collection('users').document(userid)
     users_ref = users_q.get()
 
     print(f'Document: {users_ref.to_dict()}')
     userdata = users_ref.to_dict()
-    return {"followers": userdata["followers"],
-            "name": userdata["username"],
-            "email": userdata["email"],
-            "bio": userdata["bio"],
-            "profilePicture":userdata["profilePicture"],
-            "id": users_ref.id}
+
+    followerlist.append({"followers": userdata["followers"],
+            })
+    return followerlist
 
 
 @app.get("/user/{userid}/following")
 def get_following(userid:str):
+    followinglist=[]
     users_q = db.collection('users').document(userid)
     users_ref = users_q.get()
 
     print(f'Document: {users_ref.to_dict()}')
     userdata = users_ref.to_dict()
-    return {"following": userdata["following"],
-            "name": userdata["username"],
-            "email": userdata["email"],
-            "bio": userdata["bio"],
-            "profilePicture": userdata["profilePicture"],
-            "id": users_ref.id, }
+    followinglist.append({"following": userdata["following"],
+                          })
+    return followinglist
