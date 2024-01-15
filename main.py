@@ -544,7 +544,7 @@ def get_movie_images(id : str = ""):
 
     for image in res["backdrops"]:
         image_data.append({
-            "file_path": MEDIA_URL + image["file_path"]
+            "file_path": BACKDROP_URL + image["file_path"]
         })
 
     return image_data
