@@ -529,6 +529,23 @@ def get_movie_credits(id : str = ""):
 
     return credit_data
 
+@app.get("/movie/{id/images")
+def get_movie_images(id : str = ""):
+    params = ""
+    route = "movie/" + id + "/images"
+    url = API_URL + route + params
+    res = requests.get(url, headers=headers).json()
+    default = "https://www.google.com/url?sa=i&url=https%3A%2F%2Fuxwing.com%2Fno-profile-picture-icon%2F&psig=AOvVaw3iMZCY67eG17B8pGdaqRm4&ust=1705145407673000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCJD4geff14MDFQAAAAAdAAAAABAD"
+
+    image_data = []
+
+    for image in res["backdrops"]:
+        image_data.append({
+            "file_path": MEDIA_URL + image["file_path"]
+        })
+
+    return image_data
+
 @app.get("/actor/{id}")
 def get_actor_details(id : str = ""):
     route = "person/"+id
