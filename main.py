@@ -574,7 +574,7 @@ def get_reviews_for_movie(movie_id: str):
 
 
 @app.get("/user/reviews/")
-def get_reviews_for_user(current_user: User = Depends(get_current_user)):
+def get_own_reviews(current_user: User = Depends(get_current_user)):
     reviews = []
     all_reviews_q = db.collection_group('entities')
     all_reviews_ref = all_reviews_q.stream()
@@ -583,6 +583,20 @@ def get_reviews_for_user(current_user: User = Depends(get_current_user)):
         review_data = doc.to_dict()
 
         if review_data["userid"] == current_user.id:
+            reviews.append(review_data)
+
+    return reviews
+
+@app.get("/user/{user_id}/reviews/")
+def get_reviews_for_user(user_id : str):
+    reviews = []
+    all_reviews_q = db.collection_group('entities')
+    all_reviews_ref = all_reviews_q.stream()
+    for doc in all_reviews_ref:
+        print(f'Document: {doc.to_dict()}')
+        review_data = doc.to_dict()
+
+        if review_data["userid"] == user_id:
             reviews.append(review_data)
 
     return reviews
