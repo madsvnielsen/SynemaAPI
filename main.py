@@ -639,7 +639,7 @@ def edit_user_bio(userid: str, creation_request: User, response: Response,  curr
 
 
 @app.post("/user/editProfilePicture/{userid}")
-def edit_user_bio(userid: str, creation_request: User, response: Response,
+def edit_user_profilePicture(userid: str, creation_request: User, response: Response,
                   current_user: Annotated[User, Depends(get_current_user)] = None):
     user = db.collection('users').document(userid)
 
@@ -647,3 +647,49 @@ def edit_user_bio(userid: str, creation_request: User, response: Response,
         "profilePicture": creation_request.profilePicture
     })
 
+
+@app.post("/user/{currentUserId}/follow/{userid}")
+def follow_user(userid: str, currentUserId: str):
+    # Get the document reference for the specified watchlist_id
+    doc_ref = db.collection("users").document(currentUserId)
+    otheruser_ref= db.collection("users").document(userid)
+
+
+    # Update the document to add the movie_id to the "movieIDS" array
+    doc_ref.update({
+        "following": firestore.ArrayUnion([userid])
+    })
+    otheruser_ref.update({
+        "followers": firestore.ArrayUnion([currentUserId])
+    })
+    return {"message": "following successfully"}
+
+
+@app.get("/user/{userid}/followers")
+def get_followers(userid:str):
+    users_q = db.collection('users').document(userid)
+    users_ref = users_q.get()
+
+    print(f'Document: {users_ref.to_dict()}')
+    userdata = users_ref.to_dict()
+    return {"followers": userdata["followers"],
+            "name": userdata["username"],
+            "email": userdata["email"],
+            "bio": userdata["bio"],
+            "profilePicture":userdata["profilePicture"],
+            "id": users_ref.id}
+
+
+@app.get("/user/{userid}/following")
+def get_following(userid:str):
+    users_q = db.collection('users').document(userid)
+    users_ref = users_q.get()
+
+    print(f'Document: {users_ref.to_dict()}')
+    userdata = users_ref.to_dict()
+    return {"following": userdata["following"],
+            "name": userdata["username"],
+            "email": userdata["email"],
+            "bio": userdata["bio"],
+            "profilePicture": userdata["profilePicture"],
+            "id": users_ref.id, }
