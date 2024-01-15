@@ -501,6 +501,22 @@ def get_movie_credits(id : str = ""):
 
     return credit_data
 
+@app.get("/actor/{id}")
+def get_actor_details(id : str = ""):
+    route = "person/"+id
+    url = API_URL + route
+    res = requests.get(url, headers=headers).json()
+    default = "https://www.google.com/url?sa=i&url=https%3A%2F%2Fuxwing.com%2Fno-profile-picture-icon%2F&psig=AOvVaw3iMZCY67eG17B8pGdaqRm4&ust=1705145407673000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCJD4geff14MDFQAAAAAdAAAAABAD"
+    return {
+        "id" : id,
+        "bio" : res["biography"],
+        "dob": res["birthday"],
+        "dod": res["deathday"],
+        "name": res["name"],
+        "deps": res["known_for_department"],
+        "pob": res["place_of_birth"],
+        "pic" : MEDIA_URL + res["profile_path"] if res["profile_path"] is not None else default,
+    }
 
 @app.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response : Response):
