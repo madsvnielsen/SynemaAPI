@@ -272,15 +272,44 @@ def discover_movies(genres : str = ""):
 
     simpleResult = [{
         "id": res["id"],
-        "poster_url": MEDIA_URL + res["poster_path"],
+        "poster_url":  MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
         "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
         "title": res["title"],
         "description": res["overview"],
         "rating": res["vote_average"],
-        "release_date": res["release_date"]
+        "release_date": res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
+
     } for res in response_data.get("results", [])]
 
     return simpleResult
+
+
+@app.get("/movies/{movie_id}/similar")
+def similar_movies(movie_id : str = ""):
+    route = "movie/%s/similar" % movie_id
+    url = API_URL + route
+    default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
+
+    response = requests.get(url, headers=headers)
+
+
+    if response.status_code != 200:
+        return {"details" : "error"}
+    response_data = response.json()
+
+    return [{
+        "id": res["id"],
+        "poster_url":  MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
+        "title": res["title"],
+        "description": res["overview"],
+        "rating": res["vote_average"],
+        "release_date": res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
+    } for res in response_data["results"]]
+
+
 
 @app.get("/movies/new")
 def new_movies ():
@@ -297,12 +326,13 @@ def new_movies ():
 
     simpleResult = [{
         "id": res["id"],
-        "poster_url": MEDIA_URL + res["poster_path"],
+        "poster_url":  MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
         "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
         "title": res["title"],
         "description": res["overview"],
         "rating": res["vote_average"],
-        "release_date": res["release_date"]
+        "release_date": res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
     } for res in response_data.get("results", [])]
 
     return simpleResult
@@ -320,10 +350,12 @@ def search_movies(query : str = ""):
     simpleResult = [{
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
-        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,        "title": res["title"],
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
+        "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
-        "release_date" : res["release_date"]
+        "release_date" : res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
     } for res in response["results"]
 
     ]
@@ -439,14 +471,35 @@ def get_movie(id : str = ""):
     simpleResult = {
         "id" : res["id"],
         "poster_url" : MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default ,
-        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,        "title": res["title"],
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
+        "title": res["title"],
         "description" : res["overview"],
         "rating" : res["vote_average"],
-        "release_date" : res["release_date"]
+        "release_date" : res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
     }
-
-
     return simpleResult
+
+@app.get("/movie/{id}/credits")
+def get_movie_credits(id : str = ""):
+    params = ""
+    route = "movie/" + id +"/credits"
+    url = API_URL + route + params
+    res = requests.get(url, headers=headers).json()
+    default = "https://www.google.com/url?sa=i&url=https%3A%2F%2Fuxwing.com%2Fno-profile-picture-icon%2F&psig=AOvVaw3iMZCY67eG17B8pGdaqRm4&ust=1705145407673000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCJD4geff14MDFQAAAAAdAAAAABAD"
+
+    credit_data = []
+
+
+    for actor in res["cast"]:
+        credit_data.append({
+            "character": actor["character"],
+            "name": actor["name"],
+            "picture_path" : MEDIA_URL + actor["profile_path"] if actor["profile_path"] is not None else default,
+        })
+
+    return credit_data
+
 
 @app.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response : Response):
@@ -539,7 +592,7 @@ def get_reviews_for_user(current_user: User = Depends(get_current_user)):
 def user_by_username(username: str, response : Response, current_user: Annotated[User, Depends(get_current_user)] = None):
     userlist=[]
     # Get the document reference for the specified username
-    users_q = db.collection('users').where(filter=FieldFilter('username','==', username))
+    users_q = db.collection('users').where(filter=FieldFilter('username','>=', username)).where(filter=FieldFilter('username','<=', username + '\uf8ff'))
     users_ref = users_q.stream()
     for doc in users_ref:
         print(f'Document: {doc.to_dict()}')
