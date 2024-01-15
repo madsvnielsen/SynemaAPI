@@ -524,6 +524,7 @@ def get_movie_credits(id : str = ""):
             "character": actor["character"],
             "name": actor["name"],
             "picture_path" : MEDIA_URL + actor["profile_path"] if actor["profile_path"] is not None else default,
+            "id" : str(actor["id"])
         })
 
     return credit_data
