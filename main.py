@@ -529,7 +529,7 @@ def get_movie_credits(id : str = ""):
 
     return credit_data
 
-@app.get("/movie/{id/images")
+@app.get("/movie/{id}/images")
 def get_movie_images(id : str = ""):
     params = ""
     route = "movie/" + id + "/images"
