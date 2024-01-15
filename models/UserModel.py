@@ -8,3 +8,5 @@ class User(BaseModel):
     email: Union[str, None] = None
     bio: Union[str, None] = None
     profilePicture:str=None
+    followers: []
+    following: []
