@@ -243,7 +243,7 @@ def read_db(request: Request, response : Response, current_user: Annotated[User,
         })
     return watchlists
 
-@app.get("/watchlist")
+@app.get("/watchlist/{user_id}")
 def read_other_user_db(request: Request, response : Response, user_id : str ):
     lists_ref = db.collection("watchlists").where(filter=FieldFilter("userid", "==", user_id))
     docs = lists_ref.stream()
