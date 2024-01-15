@@ -546,6 +546,22 @@ def get_movie_images(id : str = ""):
 
     return image_data
 
+@app.get("/actor/{id}")
+def get_actor_details(id : str = ""):
+    route = "person/"+id
+    url = API_URL + route
+    res = requests.get(url, headers=headers).json()
+    default = "https://www.google.com/url?sa=i&url=https%3A%2F%2Fuxwing.com%2Fno-profile-picture-icon%2F&psig=AOvVaw3iMZCY67eG17B8pGdaqRm4&ust=1705145407673000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCJD4geff14MDFQAAAAAdAAAAABAD"
+    return {
+        "id" : id,
+        "bio" : res["biography"],
+        "dob": res["birthday"],
+        "dod": res["deathday"],
+        "name": res["name"],
+        "deps": res["known_for_department"],
+        "pob": res["place_of_birth"],
+        "pic" : MEDIA_URL + res["profile_path"] if res["profile_path"] is not None else default,
+    }
 
 @app.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response : Response):
@@ -699,7 +715,7 @@ def edit_user_bio(userid: str, creation_request: User, response: Response,  curr
 
 
 @app.post("/user/editProfilePicture/{userid}")
-def edit_user_bio(userid: str, creation_request: User, response: Response,
+def edit_user_profilePicture(userid: str, creation_request: User, response: Response,
                   current_user: Annotated[User, Depends(get_current_user)] = None):
     user = db.collection('users').document(userid)
 
@@ -707,3 +723,49 @@ def edit_user_bio(userid: str, creation_request: User, response: Response,
         "profilePicture": creation_request.profilePicture
     })
 
+
+@app.post("/user/{currentUserId}/follow/{userid}")
+def follow_user(userid: str, currentUserId: str):
+    # Get the document reference for the specified watchlist_id
+    doc_ref = db.collection("users").document(currentUserId)
+    otheruser_ref= db.collection("users").document(userid)
+
+
+    # Update the document to add the movie_id to the "movieIDS" array
+    doc_ref.update({
+        "following": firestore.ArrayUnion([userid])
+    })
+    otheruser_ref.update({
+        "followers": firestore.ArrayUnion([currentUserId])
+    })
+    return {"message": "following successfully"}
+
+
+@app.get("/user/{userid}/followers")
+def get_followers(userid:str):
+    users_q = db.collection('users').document(userid)
+    users_ref = users_q.get()
+
+    print(f'Document: {users_ref.to_dict()}')
+    userdata = users_ref.to_dict()
+    return {"followers": userdata["followers"],
+            "name": userdata["username"],
+            "email": userdata["email"],
+            "bio": userdata["bio"],
+            "profilePicture":userdata["profilePicture"],
+            "id": users_ref.id}
+
+
+@app.get("/user/{userid}/following")
+def get_following(userid:str):
+    users_q = db.collection('users').document(userid)
+    users_ref = users_q.get()
+
+    print(f'Document: {users_ref.to_dict()}')
+    userdata = users_ref.to_dict()
+    return {"following": userdata["following"],
+            "name": userdata["username"],
+            "email": userdata["email"],
+            "bio": userdata["bio"],
+            "profilePicture": userdata["profilePicture"],
+            "id": users_ref.id, }
