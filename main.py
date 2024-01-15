@@ -576,5 +576,21 @@ def user_by_id(userid: str, response : Response, current_user: Annotated[User, D
         "id": users_ref.id
     }
 
+@app.post("/user/editbio/{userid}")
+def edit_user_bio(userid: str, creation_request: User, response: Response,  current_user: Annotated[User, Depends(get_current_user)] = None):
+    user=db.collection('users').document(userid)
 
+    user.update({
+        "bio":creation_request.bio
+    })
+
+
+@app.post("/user/editProfilePicture/{userid}")
+def edit_user_bio(userid: str, creation_request: User, response: Response,
+                  current_user: Annotated[User, Depends(get_current_user)] = None):
+    user = db.collection('users').document(userid)
+
+    user.update({
+        "profilePicture": creation_request.profilePicture
+    })
 

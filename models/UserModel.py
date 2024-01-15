@@ -7,3 +7,4 @@ class User(BaseModel):
     name: str
     email: Union[str, None] = None
     bio: Union[str, None] = None
+    profilePicture:str=None
