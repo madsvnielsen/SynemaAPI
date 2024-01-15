@@ -563,6 +563,28 @@ def get_actor_details(id : str = ""):
         "pic" : MEDIA_URL + res["profile_path"] if res["profile_path"] is not None else default,
     }
 
+@app.get("/actor/{id}/movies")
+def get_movies_with_actor(id : str = ""):
+    params = "?with_cast=" + id
+    route = "discover/movie"
+    url = API_URL + route + params
+    default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
+    response = requests.get(url, headers=headers).json()
+
+    return [{
+        "id": res["id"],
+        "poster_url": MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
+        "title": res["title"],
+        "description": res["overview"],
+        "rating": res["vote_average"],
+        "release_date": res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
+
+    } for res in response["results"]]
+
+
+
 @app.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response : Response):
     req = user_login(form_data.username, form_data.password, response)
@@ -743,29 +765,26 @@ def follow_user(userid: str, currentUserId: str):
 
 @app.get("/user/{userid}/followers")
 def get_followers(userid:str):
+    followerlist=[]
     users_q = db.collection('users').document(userid)
     users_ref = users_q.get()
 
     print(f'Document: {users_ref.to_dict()}')
     userdata = users_ref.to_dict()
-    return {"followers": userdata["followers"],
-            "name": userdata["username"],
-            "email": userdata["email"],
-            "bio": userdata["bio"],
-            "profilePicture":userdata["profilePicture"],
-            "id": users_ref.id}
+
+    followerlist.append({"followers": userdata["followers"],
+            })
+    return followerlist
 
 
 @app.get("/user/{userid}/following")
 def get_following(userid:str):
+    followinglist=[]
     users_q = db.collection('users').document(userid)
     users_ref = users_q.get()
 
     print(f'Document: {users_ref.to_dict()}')
     userdata = users_ref.to_dict()
-    return {"following": userdata["following"],
-            "name": userdata["username"],
-            "email": userdata["email"],
-            "bio": userdata["bio"],
-            "profilePicture": userdata["profilePicture"],
-            "id": users_ref.id, }
+    followinglist.append({"following": userdata["following"],
+                          })
+    return followinglist
