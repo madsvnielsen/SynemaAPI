@@ -412,6 +412,8 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
         "email": email,
         "bio": "",
         "profilePicture": "https://i.postimg.cc/3wJzmXPm/Avatar-Maker.png",
+        "followers":[],
+        "following": []
 
     })
 
@@ -454,7 +456,8 @@ def user_login(email: Annotated[str, Form()], password: Annotated[str, Form()], 
             "token" : "Bearer " + token,
             "bio": fields["bio"],
             "profilePicture":fields["profilePicture"],
-
+            "followers": fields["followers"],
+            "following": fields["following"]
         }
     }
 
