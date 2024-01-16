@@ -738,7 +738,13 @@ def edit_user_bio(userid: str, creation_request: User, response: Response,  curr
         "bio":creation_request.bio
     })
 
+@app.post("/user/editusername/{userid}")
+def edit_user_bio(userid: str, creation_request: User, response: Response,  current_user: Annotated[User, Depends(get_current_user)] = None):
+    user=db.collection('users').document(userid)
 
+    user.update({
+        "username":creation_request.bio
+    })
 @app.post("/user/editProfilePicture/{userid}")
 def edit_user_profilePicture(userid: str, creation_request: User, response: Response,
                   current_user: Annotated[User, Depends(get_current_user)] = None):
@@ -768,26 +774,24 @@ def follow_user(userid: str, currentUserId: str):
 
 @app.get("/user/{userid}/followers")
 def get_followers(userid:str):
-    followerlist=[]
+
     users_q = db.collection('users').document(userid)
     users_ref = users_q.get()
 
     print(f'Document: {users_ref.to_dict()}')
     userdata = users_ref.to_dict()
 
-    followerlist.append({"followers": userdata["followers"],
-            })
-    return followerlist
+
+    return userdata["followers"]
 
 
 @app.get("/user/{userid}/following")
 def get_following(userid:str):
-    followinglist=[]
+
     users_q = db.collection('users').document(userid)
     users_ref = users_q.get()
 
     print(f'Document: {users_ref.to_dict()}')
     userdata = users_ref.to_dict()
-    followinglist.append({"following": userdata["following"],
-                          })
-    return followinglist
+
+    return  userdata["following"]
