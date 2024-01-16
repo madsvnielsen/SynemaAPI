@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 from http.client import HTTPException
-from typing import Union
+from typing import Union, List
 
 from google.cloud.firestore_v1 import FieldFilter
 from google.cloud.firestore_v1.field_path import FieldPath
@@ -292,6 +292,34 @@ def discover_movies(genres : str = ""):
     default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
     #print(url)
     #response = requests.get(url, headers=headers).json()
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+
+        response_data = response.json()
+
+    simpleResult = [{
+        "id": res["id"],
+        "poster_url":  MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
+        "title": res["title"],
+        "description": res["overview"],
+        "rating": res["vote_average"],
+        "release_date": res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
+
+    } for res in response_data.get("results", [])]
+
+    return simpleResult
+
+
+@app.get("/movies/discover/filter")
+def filter_movies(genres : str, min_rating : float = 0):
+    params = "?with_genres=%s&vote_average.gte=%s" % (genres, min_rating)
+
+    route = "discover/movie"
+    url = API_URL + route + params
+    default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
