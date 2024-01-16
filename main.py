@@ -412,7 +412,7 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
         "email": email,
         "bio": "",
         "profilePicture": "https://i.postimg.cc/3wJzmXPm/Avatar-Maker.png",
-        "followers":[],
+        "followers": [],
         "following": []
 
     })
@@ -425,7 +425,9 @@ def user_signup(username: Annotated[str, Form()], email: Annotated[str, Form()],
             "email": email,
             "token": "Bearer " + create_token(doc_id),
             "bio":"",
-            "profilePicture": "https://i.postimg.cc/3wJzmXPm/Avatar-Maker.png"
+            "profilePicture": "https://i.postimg.cc/3wJzmXPm/Avatar-Maker.png",
+            "followers": [],
+            "following": []
         }
     }
 
