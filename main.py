@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 from http.client import HTTPException
-from typing import Union
+from typing import Union, List
 
 from google.cloud.firestore_v1 import FieldFilter
 from google.cloud.firestore_v1.field_path import FieldPath
@@ -292,6 +292,34 @@ def discover_movies(genres : str = ""):
     default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
     #print(url)
     #response = requests.get(url, headers=headers).json()
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+
+        response_data = response.json()
+
+    simpleResult = [{
+        "id": res["id"],
+        "poster_url":  MEDIA_URL + res["poster_path"] if res["poster_path"] is not None else default,
+        "backdrop_url": BACKDROP_URL + res["backdrop_path"] if res["backdrop_path"] is not None else default,
+        "title": res["title"],
+        "description": res["overview"],
+        "rating": res["vote_average"],
+        "release_date": res["release_date"],
+        "tagline": res["tagline"] if "tagline" in res else ""
+
+    } for res in response_data.get("results", [])]
+
+    return simpleResult
+
+
+@app.get("/movies/discover/filter")
+def filter_movies(genres : str, min_rating : float = 0):
+    params = "?with_genres=%s&vote_average.gte=%s" % (genres, min_rating)
+
+    route = "discover/movie"
+    url = API_URL + route + params
+    default = "https://i0.wp.com/godstedlund.dk/wp-content/uploads/2023/04/placeholder-5.png?w=1200&ssl=1"
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
@@ -767,13 +795,16 @@ def follow_user(userid: str, currentUserId: str):
 
 
     # Update the document to add the movie_id to the "movieIDS" array
-    doc_ref.update({
-        "following": firestore.ArrayUnion([userid])
-    })
-    otheruser_ref.update({
-        "followers": firestore.ArrayUnion([currentUserId])
-    })
-    return {"message": "following successfully"}
+    if (currentUserId!=userid):
+        doc_ref.update({
+            "following": firestore.ArrayUnion([userid])
+        })
+        otheruser_ref.update({
+            "followers": firestore.ArrayUnion([currentUserId])
+        })
+        return {"message": "following successfully"}
+    else: return {"message": "Can't follow yourself"}
+
 
 
 @app.get("/user/{userid}/followers")
@@ -799,3 +830,23 @@ def get_following(userid:str):
     userdata = users_ref.to_dict()
 
     return  userdata["following"]
+
+
+@app.post("/user/{currentUserId}/unfollow/{userid}")
+def unfollow_user(userid: str, currentUserId: str):
+    doc_ref = db.collection("users").document(currentUserId)
+    otheruser_ref = db.collection("users").document(userid)
+
+    following = doc_ref.get().get("following")
+    followers = otheruser_ref.get().get("followers")
+
+    if userid in following:
+        following.remove(userid)
+        doc_ref.update({"following": following})
+
+        followers.remove(currentUserId)
+        otheruser_ref.update({"followers": followers})
+
+        return {"message": "unfollowed successfully"}
+    else:
+        return {"message": "already unfollowed"}
