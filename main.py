@@ -765,13 +765,16 @@ def follow_user(userid: str, currentUserId: str):
 
 
     # Update the document to add the movie_id to the "movieIDS" array
-    doc_ref.update({
-        "following": firestore.ArrayUnion([userid])
-    })
-    otheruser_ref.update({
-        "followers": firestore.ArrayUnion([currentUserId])
-    })
-    return {"message": "following successfully"}
+    if (currentUserId!=userid):
+        doc_ref.update({
+            "following": firestore.ArrayUnion([userid])
+        })
+        otheruser_ref.update({
+            "followers": firestore.ArrayUnion([currentUserId])
+        })
+        return {"message": "following successfully"}
+    else: return {"message": "Can't follow yourself"}
+
 
 
 @app.get("/user/{userid}/followers")
@@ -797,3 +800,23 @@ def get_following(userid:str):
     userdata = users_ref.to_dict()
 
     return  userdata["following"]
+
+
+@app.post("/user/{currentUserId}/unfollow/{userid}")
+def unfollow_user(userid: str, currentUserId: str):
+    doc_ref = db.collection("users").document(currentUserId)
+    otheruser_ref = db.collection("users").document(userid)
+
+    following = doc_ref.get().get("following")
+    followers = otheruser_ref.get().get("followers")
+
+    if userid in following:
+        following.remove(userid)
+        doc_ref.update({"following": following})
+
+        followers.remove(currentUserId)
+        otheruser_ref.update({"followers": followers})
+
+        return {"message": "unfollowed successfully"}
+    else:
+        return {"message": "already unfollowed"}
