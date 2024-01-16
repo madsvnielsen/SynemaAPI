@@ -619,6 +619,7 @@ def create_review(id : str, creation_request : ReviewModel,current_user: Annotat
         "rating": creation_request.rating,
         "movieid": id,
         "username": current_user.name,
+        "date": datetime.datetime.now()
     })
 
     if len(existing_reviews) > 0:
@@ -626,6 +627,7 @@ def create_review(id : str, creation_request : ReviewModel,current_user: Annotat
         existing_reviews[0].reference.update({
             "reviewText": creation_request.reviewText,
             "rating": creation_request.rating,
+            "date": datetime.datetime.now()
         })
 
 
